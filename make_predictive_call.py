@@ -6,11 +6,13 @@ import sys
 from typing import Optional
 
 import requests
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 
 
-AES_SERVER: Optional[str] = None
-USERNAME: Optional[str] = None
-PASSWORD: Optional[str] = None
+AES_SERVER: Optional[str] = "192.168.122.25"
+USERNAME: Optional[str] = "cust"
+PASSWORD: Optional[str] = "aes10_cmb@Dm1n"
 
 
 def _api_url(aes_server, path):
@@ -20,6 +22,22 @@ def _api_url(aes_server, path):
     if not base_url.endswith("/api"):
         base_url = f"{base_url}/api"
     return f"{base_url}{path}"
+
+
+def _raise_for_status(response):
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as error:
+        try:
+            details = response.json()
+        except ValueError:
+            raise
+        if isinstance(details, dict) and details:
+            description = ", ".join(f"{key}={value}" for key, value in details.items())
+            raise requests.HTTPError(
+                f"{error}: AES error: {description}", response=response
+            ) from error
+        raise
 
 
 def make_predictive_call(
@@ -38,6 +56,8 @@ def make_predictive_call(
         raise ValueError("AES server, username, and password are required")
 
     verify = not insecure
+    if insecure:
+        urllib3.disable_warnings(InsecureRequestWarning)
     session_url = _api_url(aes_server, "/fe/v1/ApplicationSession")
     call_url = _api_url(aes_server, "/fe/v1/MakePredictiveCall")
     token = None
@@ -47,7 +67,7 @@ def make_predictive_call(
         session_response = requests.post(
             session_url, auth=(username, password), json={}, verify=verify
         )
-        session_response.raise_for_status()
+        _raise_for_status(session_response)
         session = session_response.json()
         token = session.get("token")
         session_id = session.get("sessionID")
@@ -63,7 +83,7 @@ def make_predictive_call(
             },
             verify=verify,
         )
-        call_response.raise_for_status()
+        _raise_for_status(call_response)
         return call_response.json()
     finally:
         if token and session_id:
@@ -110,4 +130,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    #sys.argv.extend(["--insecure", "1001", "1002"])
     raise SystemExit(main())
