@@ -12,7 +12,7 @@ from urllib3.exceptions import InsecureRequestWarning
 
 AES_SERVER: Optional[str] = "192.168.122.25"
 USERNAME: Optional[str] = "cust"
-PASSWORD: Optional[str] = "aes10_cmb@Dm1n"
+PASSWORD: Optional[str] = ""
 
 
 def _api_url(aes_server, path):
