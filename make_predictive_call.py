@@ -10,8 +10,8 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 
-AES_SERVER: Optional[str] = "192.168.122.25"
-USERNAME: Optional[str] = "cust"
+AES_SERVER: Optional[str] = ""
+USERNAME: Optional[str] = ""
 PASSWORD: Optional[str] = ""
 
 
