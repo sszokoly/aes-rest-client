@@ -223,3 +223,4 @@ data/*
 openspec/*
 test_*
 java/*
+.vscode/*
